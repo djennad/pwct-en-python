@@ -63,6 +63,11 @@ class Runner:
             tail = (tail + text)[-20000:]
             events.put(("out", text))
         code = process.wait()
+        for pipe in (process.stdout, process.stdin):
+            try:
+                pipe.close()
+            except OSError:
+                pass
         if code:
             self.last_error_line = error_line(tail, path)
         events.put(("exit", code))

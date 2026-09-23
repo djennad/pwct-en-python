@@ -20,6 +20,12 @@ Conditional directives (resolved while expanding):
 ``<PWCT:FOREACH> v in <list>``  repeat the lines up to ``<PWCT:ENDFOREACH>``
                         for every comma separated item, as placeholder ``<v>``
 ``<PWCT:NOTE> text``    comment inside the template, ignored
+``<PWCT:NEWVAR> name``  create a template variable ``<name>`` (empty) and
+                        make it the active variable
+``<PWCT:SETVARVALUE> t`` set the value of the active variable
+``<PWCT:SELECTVAR> n``  make ``n`` the active variable
+``<PWCT:REPLACEVARSWITHVALUES>``  accepted for compatibility (variables are
+                        replaced as soon as they are set)
 
 Structural directives (returned as operations for the goal designer):
 
@@ -40,7 +46,8 @@ DIRECTIVE_RE = re.compile(r"^\s*<(?:RPWI|PWCT):([A-Za-z]+)>[ \t]?(.*)$")
 PLACEHOLDER_RE = re.compile(r"<([A-Za-z_][A-Za-z0-9_]*)((?:\|[A-Za-z_]+)*)>")
 
 CONDITIONAL = {"VALUE", "POSITIVE", "NEGATIVE", "TEST", "ENDTEST",
-               "IF", "ELSE", "ENDIF", "NOTE", "FOREACH", "ENDFOREACH"}
+               "IF", "ELSE", "ENDIF", "NOTE", "FOREACH", "ENDFOREACH",
+               "NEWVAR", "SETVARVALUE", "SELECTVAR", "REPLACEVARSWITHVALUES"}
 FOREACH_RE = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)\s+in\s+(.*)$")
 STRUCTURAL = {"NEWSTEP", "PUTMARK", "SETMARK", "INFORMATION", "IMPORT",
               "IGNORELAST", "IGNORELEVEL", "TABPUSH", "TABPOP"}
@@ -142,12 +149,15 @@ def _expand(lines, offset, values):
     active = [True]          # stack of "is this block kept"
     kinds = []               # "test" or "if" for each open block
     test_value, positive = "0", False
+    active_var = None
     i = 0
     while i < len(lines):
         line = lines[i]
         lineno = i + offset + 1
         i += 1
         match = DIRECTIVE_RE.match(line)
+        if not match and line.lstrip().startswith("<*>"):
+            continue                          # RPWI comment line
         if not match:
             if active[-1]:
                 text = substitute(line, values)
@@ -203,6 +213,19 @@ def _expand(lines, offset, values):
             positive = True
         elif name == "NEGATIVE":
             positive = False
+        elif name == "NEWVAR":
+            active_var = arg.strip("<> ").lower()
+            if not active_var:
+                raise TemplateError("Line %d: <PWCT:NEWVAR> needs a name" % lineno)
+            values[active_var] = ""
+        elif name == "SETVARVALUE":
+            if active_var is None:
+                raise TemplateError("Line %d: <PWCT:SETVARVALUE> before <PWCT:NEWVAR>" % lineno)
+            values[active_var] = substitute(arg, values)
+        elif name == "SELECTVAR":
+            active_var = arg.strip("<> ").lower()
+        elif name == "REPLACEVARSWITHVALUES":
+            continue
         else:
             arg = substitute(arg, values).split("\n")[0].strip()
             ops.append((name.lower(), arg))
