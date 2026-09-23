@@ -6,18 +6,27 @@ You build a program as a tree of steps by filling small forms
 (*interaction pages*); PWCT-Python generates the Python code, shows it and
 runs it.
 
-![PWCT-Python](docs/screenshot.png)
+![PWCT-Python Goal Designer](docs/screenshot.png)
+
+The windows follow the forms of the original PWCT: the **Goal Designer**
+(`rpwi.scx`), the **Select Component** browser (`selser.scx`) and the
+**Interaction Using Transporter** page (`runtrf.scx`), with the same
+layout and colours.
+
+| Select Component | Interaction page |
+|---|---|
+| ![Components browser](docs/components_browser.png) | ![Interaction page](docs/interaction.png) |
 
 ## بالعربية
 
 **PWCT-Python** بيئة برمجة مرئية مكتوبة بلغة بايثون، مبنية على فكرة برنامج
 PWCT (البرمجة بدون كتابة كود). بدل كتابة الكود:
 
-1. تختار خطوة في **مصمم الأهداف** (Goal Designer) على اليسار.
-2. تختار **مكوّناً** (Component) من متصفح المكونات: طباعة، إدخال، شرط، حلقة، دالة، صنف، نافذة رسومية...
+1. تختار خطوة في **مصمم الأهداف** (Goal Designer)، وفي البداية توجد خطوة "Start Here" فقط.
+2. تضغط **Interact** (أو Ctrl+Space) فتظهر نافذة **Select Component**: المجالات على اليسار والمكونات على اليمين (طباعة، إدخال، شرط، حلقة، دالة، صنف، نافذة رسومية...).
 3. تملأ **صفحة التفاعل** (Interaction Page) وتضغط OK، فتُضاف خطوات جديدة للشجرة.
 4. تُولَّد شيفرة بايثون تلقائياً ويمكنك تشغيلها بـ F5 ومشاهدة المخرجات وإدخال البيانات.
-5. للتعديل: انقر مرتين على الخطوة فتُفتح صفحة التفاعل من جديد، وتبقى الخطوات التي أضفتها داخلها كما هي.
+5. للتعديل: اختر الخطوة واضغط **Modify** (أو انقر عليها مرتين) فتُفتح صفحة التفاعل من جديد، وتبقى الخطوات التي أضفتها داخلها كما هي.
 6. عند حدوث خطأ أثناء التشغيل يتم تحديد الخطوة المسؤولة عنه في الشجرة.
 
 التشغيل:
@@ -54,7 +63,10 @@ filters such as `<name|repr>` and `<name|ident>`.
 
 ## Features
 
-* Goal Designer: add, edit (re-open the interaction), rename, delete,
+* Goal Designer like PWCT: New Step, Delete Step, Edit Step, move up / down,
+  Interact, Modify, "Ignore (Disable) Step", and the Steps Tree / Step
+  Details / Source Code / Output views.
+* Steps: add, modify (re-open the interaction), rename, delete,
   cut / copy / paste, move up / down / in / out, drag and drop,
   enable / disable (a disabled step is written as a comment), comments,
   unlimited undo / redo.

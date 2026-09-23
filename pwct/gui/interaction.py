@@ -1,9 +1,14 @@
-"""Interaction pages: the dialog the user fills instead of writing code."""
+"""Interaction pages: the dialog the user fills instead of writing code.
+
+Styled like the "Interaction Using Transporter" window of PWCT: a purple
+title bar, a green bar with the component, a white page with the fields
+and the Ok / Cancel / Again buttons."""
 
 import tkinter as tk
 from tkinter import messagebox, ttk
 
 from ..engine.template import TemplateError
+from . import theme
 
 
 class InteractionPage(tk.Toplevel):
@@ -12,39 +17,54 @@ class InteractionPage(tk.Toplevel):
     After the window closes, ``result`` holds the values (or ``None`` when
     cancelled)."""
 
-    def __init__(self, master, component, values=None, editing=False, preview=None):
-        super().__init__(master)
+    def __init__(self, master, component, values=None, editing=False, preview=None, fonts=None):
+        super().__init__(master, background=theme.WHITE)
+        fonts = fonts or theme.Fonts(self)
+        self.fonts = fonts
         self.component = component
         self.preview = preview
         self.result = None
         self.vars = {}
         self.memos = {}
-        self.title(("Edit - " if editing else "") + component.name)
+        self.title("Interaction Using Transporter")
         self.transient(master)
         self.resizable(True, True)
         values = dict(component.default_values(), **(values or {}))
 
-        outer = ttk.Frame(self, padding=12)
-        outer.pack(fill="both", expand=True)
-        outer.columnconfigure(1, weight=1)
+        head = tk.Frame(self, background=theme.PURPLE)
+        head.pack(fill="x")
+        tk.Label(head, text=component.name, font=fonts.title_small, background=theme.PURPLE,
+                 foreground=theme.WHITE).pack(padx=16, pady=(6, 4))
 
-        header = ttk.Label(outer, text=component.name, style="PageTitle.TLabel")
-        header.grid(row=0, column=0, columnspan=2, sticky="w")
+        bar = tk.Frame(self, background=theme.GREEN)
+        bar.pack(fill="x")
+        tk.Label(bar, text="%s : %s%s" % (component.category, component.name,
+                                           "   (Modify)" if editing else ""),
+                 font=fonts.normal, background=theme.GREEN, foreground=theme.BLACK).pack(
+            side="left", padx=8, pady=3)
+
+        page = tk.Frame(self, background=theme.WHITE, padx=14, pady=10)
+        page.pack(fill="both", expand=True)
+        page.columnconfigure(1, weight=1)
+
+        row = 0
         if component.description:
-            ttk.Label(outer, text=component.description, wraplength=440,
-                      foreground="#555").grid(row=1, column=0, columnspan=2, sticky="w", pady=(0, 6))
+            tk.Label(page, text=component.description, wraplength=460, justify="left",
+                     font=fonts.normal, background=theme.WHITE, foreground="#555555").grid(
+                row=row, column=0, columnspan=2, sticky="w", pady=(0, 6))
+            row += 1
 
-        row = 2
         first = None
         for field in component.fields:
             if field.kind == "title":
-                ttk.Label(outer, text=field.label, style="Section.TLabel").grid(
-                    row=row, column=0, columnspan=2, sticky="w", pady=(10, 2))
-                ttk.Separator(outer).grid(row=row + 1, column=0, columnspan=2, sticky="ew")
-                row += 2
+                tk.Label(page, text=field.label, font=(fonts.header[0], 14), background=theme.WHITE,
+                         foreground=theme.BLACK, anchor="w").grid(
+                    row=row, column=0, columnspan=2, sticky="ew", pady=(8, 2))
+                row += 1
                 continue
             if field.kind == "help":
-                ttk.Label(outer, text=field.label, wraplength=440, foreground="#555").grid(
+                tk.Label(page, text=field.label, wraplength=460, justify="left", font=fonts.normal,
+                         background=theme.WHITE, foreground="#555555").grid(
                     row=row, column=0, columnspan=2, sticky="w", pady=2)
                 row += 1
                 continue
@@ -52,44 +72,54 @@ class InteractionPage(tk.Toplevel):
             label = field.label + (" *" if field.required else "")
             if field.kind == "check":
                 var = tk.StringVar(value="1" if value == "1" else "0")
-                widget = ttk.Checkbutton(outer, text=field.label, variable=var,
-                                         onvalue="1", offvalue="0")
+                widget = tk.Checkbutton(page, text=field.label, variable=var, onvalue="1",
+                                        offvalue="0", font=fonts.normal, background=theme.WHITE,
+                                        activebackground=theme.WHITE, highlightthickness=0)
                 widget.grid(row=row, column=0, columnspan=2, sticky="w", pady=3)
                 self.vars[field.name] = var
             else:
-                ttk.Label(outer, text=label).grid(row=row, column=0, sticky="nw", padx=(0, 8), pady=4)
+                tk.Label(page, text=label, font=fonts.normal, background=theme.FACE,
+                         anchor="w", padx=6, relief="flat").grid(
+                    row=row, column=0, sticky="nsew", padx=(0, 8), pady=3)
                 if field.kind == "memo":
-                    widget = tk.Text(outer, width=46, height=7, wrap="none", undo=True,
-                                     font=("Courier New", 10))
+                    widget = tk.Text(page, width=46, height=7, wrap="none", undo=True,
+                                     font=fonts.code, relief="solid", borderwidth=1)
                     widget.insert("1.0", value)
                     widget.bind("<Tab>", self._memo_tab)
                     self.memos[field.name] = widget
                 elif field.kind == "list":
                     var = tk.StringVar(value=value)
-                    widget = ttk.Combobox(outer, textvariable=var, values=field.options,
-                                          state="readonly", width=44)
+                    widget = ttk.Combobox(page, textvariable=var, values=field.options,
+                                          state="readonly", width=44, font=fonts.normal)
                     self.vars[field.name] = var
                 else:
                     var = tk.StringVar(value=value)
-                    widget = ttk.Entry(outer, textvariable=var, width=46)
+                    widget = tk.Entry(page, textvariable=var, width=46, font=fonts.normal,
+                                      relief="solid", borderwidth=1)
                     self.vars[field.name] = var
-                widget.grid(row=row, column=1, sticky="ew", pady=4)
+                widget.grid(row=row, column=1, sticky="ew", pady=3, ipady=2)
             first = first or widget
             row += 1
 
-        buttons = ttk.Frame(outer)
-        buttons.grid(row=row, column=0, columnspan=2, sticky="e", pady=(14, 0))
+        tk.Frame(self, height=1, background=theme.GRAY).pack(fill="x")
+        buttons = tk.Frame(self, background=theme.WHITE, padx=10, pady=8)
+        buttons.pack(fill="x")
         if preview:
-            ttk.Button(buttons, text="Preview Code", command=self.show_preview).pack(side="left", padx=4)
-        ttk.Button(buttons, text="OK", command=self.ok, default="active").pack(side="left", padx=4)
-        ttk.Button(buttons, text="Cancel", command=self.destroy).pack(side="left", padx=4)
+            tk.Button(buttons, text="Preview Code", width=12, font=fonts.button,
+                      command=self.show_preview).pack(side="left")
+        tk.Button(buttons, text="Cancel", width=10, font=fonts.button,
+                  command=self.destroy).pack(side="right")
+        tk.Button(buttons, text="Ok", width=10, font=fonts.button, default="active",
+                  command=self.ok).pack(side="right", padx=6)
+        tk.Button(buttons, text="Again", width=10, font=fonts.button,
+                  command=self.again).pack(side="right")
 
         self.bind("<Return>", self._enter)
         self.bind("<Escape>", lambda e: self.destroy())
         self.protocol("WM_DELETE_WINDOW", self.destroy)
         if first is not None:
             first.focus_set()
-            if isinstance(first, ttk.Entry):
+            if isinstance(first, tk.Entry):
                 first.select_range(0, "end")
         self.update_idletasks()
         x = master.winfo_rootx() + (master.winfo_width() - self.winfo_width()) // 2
@@ -112,14 +142,25 @@ class InteractionPage(tk.Toplevel):
             result[name] = widget.get("1.0", "end-1c")
         return result
 
+    def again(self):
+        """Put the default values back (the "Again" button of PWCT)."""
+        defaults = self.component.default_values()
+        for name, var in self.vars.items():
+            var.set(defaults.get(name, ""))
+        for name, widget in self.memos.items():
+            widget.delete("1.0", "end")
+            widget.insert("1.0", defaults.get(name, ""))
+
     def show_preview(self):
         try:
             text = self.preview(self.component, self.values())
         except TemplateError as exc:
             text = "Template error: %s" % exc
+        except Exception as exc:          # a required field is empty ...
+            text = str(exc)
         win = tk.Toplevel(self)
         win.title("Preview - " + self.component.name)
-        box = tk.Text(win, width=70, height=18, font=("Courier New", 10))
+        box = tk.Text(win, width=70, height=18, font=self.fonts.code)
         box.insert("1.0", text)
         box.configure(state="disabled")
         box.pack(fill="both", expand=True)

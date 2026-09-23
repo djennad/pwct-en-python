@@ -50,13 +50,11 @@ class GuiTests(unittest.TestCase):
         app = self.app
         app._reveal(app.project.root.id)
         self.answers.append({"cond": "True"})
-        app.comp_tree.selection_set("control/while")
-        app.use_component()
+        app.add_component("control/while")
         loop = app.selected()
         self.assertEqual(loop.title, "While True")
         self.answers.append({"msg": "again"})
-        app.comp_tree.selection_set("console/print")
-        app.use_component()
+        app.add_component("console/print")
         self.assertIn("while True:\n    print('again')", app.source)
         app._reveal(loop.id)
         self.answers.append({"cond": "False"})
@@ -66,6 +64,38 @@ class GuiTests(unittest.TestCase):
         self.assertIn("while True:", app.source)
         app.redo()
         self.assertIn("while False:", app.source)
+
+    def test_components_browser(self):
+        from pwct.gui.browser import ComponentBrowser
+        app = self.app
+        browser = ComponentBrowser(app, app.library, app.insert_mode, app.fonts, app.icons)
+        browser.search_var.set("while")
+        self.assertIn("control/while", browser.components.get_children())
+        browser.search_var.set("")
+        browser.select("gui/button")
+        self.assertEqual(browser.domains.selection(), ("GUI (Tkinter)",))
+        browser.ok()
+        self.assertEqual(browser.result, "gui/button")
+
+    def test_new_step_and_ignore(self):
+        from tkinter import simpledialog
+        app = self.app
+        old = simpledialog.askstring
+        simpledialog.askstring = lambda *a, **k: "My group"
+        try:
+            app._reveal(app.project.root.id)
+            app.new_step()
+        finally:
+            simpledialog.askstring = old
+        step = app.selected()
+        self.assertEqual(step.title, "My group")
+        self.assertIsNone(step.interaction)
+        first = app.project.root.children[0]
+        app._reveal(first.id)
+        app.disabled_var.set(1)
+        app._disabled_clicked()
+        self.assertTrue(first.disabled)
+        self.assertIn("# # My first program", app.source)
 
     def test_run_with_input_and_error(self):
         app = self.app
