@@ -1,0 +1,19 @@
+[component]
+name: Text Box
+category: GUI (Tkinter)
+description: A box where the user can type text. Read it with <var>.get().
+
+[interaction]
+title Text Box
+text! var | Variable | txt
+text! parent | Window | win
+text width | Width (characters) | 20
+title Position
+text x | X | 20
+text y | Y | 100
+
+[template]
+<PWCT:NEWSTEP> Text box <var>
+<PWCT:IMPORT> import tkinter as tk
+<var|ident> = tk.Entry(<parent>, width=<width>)
+<var|ident>.place(x=<x>, y=<y>)

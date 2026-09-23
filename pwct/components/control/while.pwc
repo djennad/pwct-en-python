@@ -1,0 +1,12 @@
+[component]
+name: While Loop
+category: Control Structures
+description: Repeat the steps inside while a condition is true.
+
+[interaction]
+title While Loop
+text! cond | Condition | True
+
+[template]
+<PWCT:NEWSTEP> While <cond>
+while <cond>:

@@ -1,0 +1,13 @@
+[component]
+name: Raise Error
+category: Control Structures
+description: Stop with an error message.
+
+[interaction]
+title Raise Error
+text! error | Error type | ValueError
+text msg | Message | Invalid value
+
+[template]
+<PWCT:NEWSTEP> Raise <error>: <msg>
+raise <error>(<msg|repr>)

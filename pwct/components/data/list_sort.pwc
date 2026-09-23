@@ -1,0 +1,17 @@
+[component]
+name: Sort List
+category: Lists & Dictionaries
+description: Sort the items of a list.
+
+[interaction]
+title Sort
+text! lst | List | items
+check reverse | Descending order | 0
+
+[template]
+<PWCT:NEWSTEP> Sort <lst>
+<PWCT:IF> <reverse>
+<lst>.sort(reverse=True)
+<PWCT:ELSE>
+<lst>.sort()
+<PWCT:ENDIF>

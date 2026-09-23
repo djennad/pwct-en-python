@@ -1,0 +1,20 @@
+[component]
+name: Label
+category: GUI (Tkinter)
+description: Show text on a window.
+
+[interaction]
+title Label
+text! var | Variable | lbl
+text! parent | Window | win
+text text | Text | Hello
+text font | Font size | 12
+title Position
+text x | X | 20
+text y | Y | 20
+
+[template]
+<PWCT:NEWSTEP> Label <var>: <text>
+<PWCT:IMPORT> import tkinter as tk
+<var|ident> = tk.Label(<parent>, text=<text|repr>, font=("Arial", <font>))
+<var|ident>.place(x=<x>, y=<y>)

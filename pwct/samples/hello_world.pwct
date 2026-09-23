@@ -1,0 +1,80 @@
+{
+ "format": "pwct-python",
+ "version": 1,
+ "name": "Hello World",
+ "next_id": 10,
+ "root": {
+  "id": "1",
+  "title": "Start Here",
+  "children": [
+   {
+    "id": "3",
+    "title": "# My first program made without coding",
+    "code": [
+     "# My first program made without coding"
+    ],
+    "interaction": "2",
+    "num": 1
+   },
+   {
+    "id": "5",
+    "title": "Print Hello, World!",
+    "code": [
+     "print('Hello, World!')"
+    ],
+    "interaction": "4",
+    "num": 1
+   },
+   {
+    "id": "7",
+    "title": "Get name from the user",
+    "code": [
+     "name = input('What is your name? ')"
+    ],
+    "interaction": "6",
+    "num": 1
+   },
+   {
+    "id": "9",
+    "title": "Print \"Welcome, \" + name + \"!\"",
+    "code": [
+     "print(\"Welcome, \" + name + \"!\")"
+    ],
+    "interaction": "8",
+    "num": 1
+   }
+  ]
+ },
+ "interactions": {
+  "2": {
+   "component": "other/comment",
+   "values": {
+    "text": "My first program made without coding"
+   }
+  },
+  "4": {
+   "component": "console/print",
+   "values": {
+    "msg": "Hello, World!",
+    "kind": "Text",
+    "newline": "1"
+   }
+  },
+  "6": {
+   "component": "console/input",
+   "values": {
+    "var": "name",
+    "prompt": "What is your name?",
+    "type": "Text"
+   }
+  },
+  "8": {
+   "component": "console/print",
+   "values": {
+    "msg": "\"Welcome, \" + name + \"!\"",
+    "kind": "Expression",
+    "newline": "1"
+   }
+  }
+ }
+}

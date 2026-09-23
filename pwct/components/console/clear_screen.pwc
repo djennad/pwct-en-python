@@ -1,0 +1,12 @@
+[component]
+name: Clear Screen
+category: Console
+description: Clear the console window.
+
+[interaction]
+help Clears the text on the console window.
+
+[template]
+<PWCT:NEWSTEP> Clear the screen
+<PWCT:IMPORT> os
+os.system("cls" if os.name == "nt" else "clear")

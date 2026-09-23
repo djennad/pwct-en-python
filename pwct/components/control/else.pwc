@@ -1,0 +1,12 @@
+[component]
+name: Else
+category: Control Structures
+position: after
+description: Steps to run when the previous If / Else If conditions are false.
+
+[interaction]
+help Put this step directly after an If or Else If step.
+
+[template]
+<PWCT:NEWSTEP> Else
+else:

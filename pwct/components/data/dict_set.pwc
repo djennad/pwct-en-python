@@ -1,0 +1,14 @@
+[component]
+name: Set Dictionary Item
+category: Lists & Dictionaries
+description: Store a value under a key in a dictionary.
+
+[interaction]
+title Set Item
+text! dct | Dictionary | data
+text! key | Key (expression) | "name"
+text! value | Value (expression) | "PWCT"
+
+[template]
+<PWCT:NEWSTEP> <dct>[<key>] = <value>
+<dct>[<key>] = <value>

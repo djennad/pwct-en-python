@@ -1,0 +1,15 @@
+[component]
+name: Math Function
+category: Math
+description: Calculate a math function and store the result.
+
+[interaction]
+title Math
+text! var | Result variable | r
+list func | Function | sqrt | sqrt, sin, cos, tan, log, log10, exp, floor, ceil, fabs, factorial
+text! arg | Value | 16
+
+[template]
+<PWCT:NEWSTEP> <var> = <func>(<arg>)
+<PWCT:IMPORT> math
+<var|ident> = math.<func>(<arg>)

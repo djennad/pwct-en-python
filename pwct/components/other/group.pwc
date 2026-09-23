@@ -1,0 +1,11 @@
+[component]
+name: Group of Steps
+category: Other
+description: A step with a name that only groups other steps (organises the program).
+
+[interaction]
+title Group
+text! title | Group title | Part 1
+
+[template]
+<PWCT:NEWSTEP> <title>

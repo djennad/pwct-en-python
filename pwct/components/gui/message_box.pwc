@@ -1,0 +1,23 @@
+[component]
+name: Message Box
+category: GUI (Tkinter)
+description: Show a message in a small window.
+
+[interaction]
+title Message Box
+text title | Title | Message
+text! msg | Message (expression) | "Hello"
+list kind | Kind | Information | Information, Warning, Error
+
+[template]
+<PWCT:NEWSTEP> Message box: <msg>
+<PWCT:IMPORT> from tkinter import messagebox
+<PWCT:IF> <kind> == Information
+messagebox.showinfo(<title|repr>, <msg>)
+<PWCT:ENDIF>
+<PWCT:IF> <kind> == Warning
+messagebox.showwarning(<title|repr>, <msg>)
+<PWCT:ENDIF>
+<PWCT:IF> <kind> == Error
+messagebox.showerror(<title|repr>, <msg>)
+<PWCT:ENDIF>

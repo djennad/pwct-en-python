@@ -1,0 +1,14 @@
+[component]
+name: Create Object
+category: Classes & Objects
+description: Create a new object from a class.
+
+[interaction]
+title New Object
+text! var | Object variable | p
+text! cls | Class | Person
+text args | Arguments | "Ali", 30
+
+[template]
+<PWCT:NEWSTEP> <var> = New <cls>(<args>)
+<var|ident> = <cls>(<args>)

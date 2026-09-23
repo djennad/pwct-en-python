@@ -1,0 +1,36 @@
+[component]
+name: Define Method
+category: Classes & Objects
+description: A function that belongs to a class. Put it inside a class step.
+
+[interaction]
+title Define Method
+text! name | Method name | greet
+text params | Parameters (after self) |
+list kind | Kind | Normal | Normal, Static, Class method
+
+[template]
+<PWCT:NEWSTEP> Method <name>(<params>)
+<PWCT:IF> <kind> == Static
+@staticmethod
+<PWCT:IF> <params>
+def <name|ident>(<params>):
+<PWCT:ELSE>
+def <name|ident>():
+<PWCT:ENDIF>
+<PWCT:ENDIF>
+<PWCT:IF> <kind> == Class method
+@classmethod
+<PWCT:IF> <params>
+def <name|ident>(cls, <params>):
+<PWCT:ELSE>
+def <name|ident>(cls):
+<PWCT:ENDIF>
+<PWCT:ENDIF>
+<PWCT:IF> <kind> == Normal
+<PWCT:IF> <params>
+def <name|ident>(self, <params>):
+<PWCT:ELSE>
+def <name|ident>(self):
+<PWCT:ENDIF>
+<PWCT:ENDIF>

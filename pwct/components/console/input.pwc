@@ -1,0 +1,22 @@
+[component]
+name: Get Input
+category: Console
+description: Ask the user to type a value and store it in a variable.
+
+[interaction]
+title Get Input
+text! var | Variable | name
+text prompt | Message | Enter your name:
+list type | Value type | Text | Text, Integer, Decimal
+
+[template]
+<PWCT:NEWSTEP> Get <var> from the user
+<PWCT:IF> <type> == Integer
+<var|ident> = int(input(<prompt|space|repr>))
+<PWCT:ENDIF>
+<PWCT:IF> <type> == Decimal
+<var|ident> = float(input(<prompt|space|repr>))
+<PWCT:ENDIF>
+<PWCT:IF> <type> == Text
+<var|ident> = input(<prompt|space|repr>)
+<PWCT:ENDIF>

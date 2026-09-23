@@ -1,0 +1,15 @@
+[component]
+name: Random Number
+category: Math
+description: Get a random whole number between two values.
+
+[interaction]
+title Random
+text! var | Variable | n
+text! low | From | 1
+text! high | To | 100
+
+[template]
+<PWCT:NEWSTEP> <var> = random number from <low> to <high>
+<PWCT:IMPORT> random
+<var|ident> = random.randint(<low>, <high>)

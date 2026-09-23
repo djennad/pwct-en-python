@@ -1,0 +1,17 @@
+[component]
+name: Print Values
+category: Console
+description: Print a label followed by values of variables or expressions.
+
+[interaction]
+title Print Values
+text label | Label | Result:
+text! values | Values (separated by commas) | x, y
+
+[template]
+<PWCT:NEWSTEP> Print <label> <values>
+<PWCT:IF> <label>
+print(<label|repr>, <values>)
+<PWCT:ELSE>
+print(<values>)
+<PWCT:ENDIF>

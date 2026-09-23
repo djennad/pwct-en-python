@@ -1,0 +1,14 @@
+[component]
+name: Assignment
+category: Variables
+description: Set the value of a variable.
+
+[interaction]
+title Assignment
+text! var | Variable | x
+list op | Operation | = | =, +=, -=, *=, /=, //=, %=, **=
+text! value | Value (expression) | 0
+
+[template]
+<PWCT:NEWSTEP> <var> <op> <value>
+<var> <op> <value>

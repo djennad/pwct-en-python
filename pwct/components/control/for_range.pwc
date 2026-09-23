@@ -1,0 +1,23 @@
+[component]
+name: For Loop (Range)
+category: Control Structures
+description: Repeat the steps inside while a counter goes from a start to an end value.
+
+[interaction]
+title For Loop
+text! var | Counter variable | x
+text! start | From | 1
+text! end | To (included) | 10
+text step | Step | 1
+
+[template]
+<PWCT:NEWSTEP> For <var> = <start> To <end> Step <step>
+<PWCT:IF> <step> == 1
+for <var|ident> in range(<start>, <end> + 1):
+<PWCT:ELSE>
+<PWCT:IF> <step>
+for <var|ident> in range(<start>, <end> + (1 if <step> > 0 else -1), <step>):
+<PWCT:ELSE>
+for <var|ident> in range(<start>, <end> + 1):
+<PWCT:ENDIF>
+<PWCT:ENDIF>

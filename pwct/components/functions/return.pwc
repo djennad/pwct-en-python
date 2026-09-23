@@ -1,0 +1,12 @@
+[component]
+name: Return
+category: Functions
+description: Leave the function and give back a value.
+
+[interaction]
+title Return
+text value | Value (expression) |
+
+[template]
+<PWCT:NEWSTEP> Return <value>
+return <value>

@@ -1,0 +1,14 @@
+[component]
+name: Small Function (lambda)
+category: Functions
+description: Define a one-line function stored in a variable.
+
+[interaction]
+title Lambda
+text! name | Name | square
+text params | Parameters | x
+text! expr | Result expression | x * x
+
+[template]
+<PWCT:NEWSTEP> <name>(<params>) = <expr>
+<name|ident> = lambda <params>: <expr>

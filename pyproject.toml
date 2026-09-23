@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pwct-python"
+version = "0.1.0"
+description = "Visual programming environment that generates Python code, inspired by PWCT"
+readme = "README.md"
+requires-python = ">=3.8"
+
+[project.scripts]
+pwct = "pwct.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["pwct*"]
+
+[tool.setuptools.package-data]
+pwct = ["components/**/*.pwc", "samples/*.pwct"]

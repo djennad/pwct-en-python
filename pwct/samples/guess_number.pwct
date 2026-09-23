@@ -1,0 +1,235 @@
+{
+ "format": "pwct-python",
+ "version": 1,
+ "name": "Guess the Number",
+ "next_id": 28,
+ "root": {
+  "id": "1",
+  "title": "Start Here",
+  "children": [
+   {
+    "id": "3",
+    "title": "Print I am thinking of a number between 1 and 100",
+    "code": [
+     "print('I am thinking of a number between 1 and 100')"
+    ],
+    "interaction": "2",
+    "num": 1
+   },
+   {
+    "id": "5",
+    "title": "secret = random number from 1 to 100",
+    "code": [
+     "secret = random.randint(1, 100)"
+    ],
+    "imports": [
+     "random"
+    ],
+    "interaction": "4",
+    "num": 1
+   },
+   {
+    "id": "7",
+    "title": "Define variable tries (Number)",
+    "code": [
+     "tries = 0"
+    ],
+    "interaction": "6",
+    "num": 1
+   },
+   {
+    "id": "9",
+    "title": "While True",
+    "code": [
+     "while True:"
+    ],
+    "interaction": "8",
+    "num": 1,
+    "children": [
+     {
+      "id": "11",
+      "title": "Get guess from the user",
+      "code": [
+       "guess = int(input('Your guess: '))"
+      ],
+      "interaction": "10",
+      "num": 1
+     },
+     {
+      "id": "13",
+      "title": "Increment tries by 1",
+      "code": [
+       "tries += 1"
+      ],
+      "interaction": "12",
+      "num": 1
+     },
+     {
+      "id": "15",
+      "title": "If guess < secret",
+      "code": [
+       "if guess < secret:"
+      ],
+      "interaction": "14",
+      "num": 1,
+      "children": [
+       {
+        "id": "17",
+        "title": "Print Too small!",
+        "code": [
+         "print('Too small!')"
+        ],
+        "interaction": "16",
+        "num": 1
+       }
+      ]
+     },
+     {
+      "id": "19",
+      "title": "Else If guess > secret",
+      "code": [
+       "elif guess > secret:"
+      ],
+      "interaction": "18",
+      "num": 1,
+      "children": [
+       {
+        "id": "21",
+        "title": "Print Too big!",
+        "code": [
+         "print('Too big!')"
+        ],
+        "interaction": "20",
+        "num": 1
+       }
+      ]
+     },
+     {
+      "id": "23",
+      "title": "Else",
+      "code": [
+       "else:"
+      ],
+      "interaction": "22",
+      "num": 1,
+      "children": [
+       {
+        "id": "25",
+        "title": "Print \"Correct! You needed\", tries, \"tries\"",
+        "code": [
+         "print(\"Correct! You needed\", tries, \"tries\")"
+        ],
+        "interaction": "24",
+        "num": 1
+       },
+       {
+        "id": "27",
+        "title": "Exit loop",
+        "code": [
+         "break"
+        ],
+        "interaction": "26",
+        "num": 1
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "interactions": {
+  "2": {
+   "component": "console/print",
+   "values": {
+    "msg": "I am thinking of a number between 1 and 100",
+    "kind": "Text",
+    "newline": "1"
+   }
+  },
+  "4": {
+   "component": "math/random",
+   "values": {
+    "var": "secret",
+    "low": "1",
+    "high": "100"
+   }
+  },
+  "6": {
+   "component": "variables/define",
+   "values": {
+    "var": "tries",
+    "type": "Number",
+    "value": "0"
+   }
+  },
+  "8": {
+   "component": "control/while",
+   "values": {
+    "cond": "True"
+   }
+  },
+  "10": {
+   "component": "console/input",
+   "values": {
+    "var": "guess",
+    "prompt": "Your guess:",
+    "type": "Integer"
+   }
+  },
+  "12": {
+   "component": "variables/increment",
+   "values": {
+    "var": "tries",
+    "op": "Increment",
+    "step": "1"
+   }
+  },
+  "14": {
+   "component": "control/if",
+   "values": {
+    "cond": "guess < secret",
+    "else": "0"
+   }
+  },
+  "16": {
+   "component": "console/print",
+   "values": {
+    "msg": "Too small!",
+    "kind": "Text",
+    "newline": "1"
+   }
+  },
+  "18": {
+   "component": "control/elif",
+   "values": {
+    "cond": "guess > secret"
+   }
+  },
+  "20": {
+   "component": "console/print",
+   "values": {
+    "msg": "Too big!",
+    "kind": "Text",
+    "newline": "1"
+   }
+  },
+  "22": {
+   "component": "control/else",
+   "values": {}
+  },
+  "24": {
+   "component": "console/print",
+   "values": {
+    "msg": "\"Correct! You needed\", tries, \"tries\"",
+    "kind": "Expression",
+    "newline": "1"
+   }
+  },
+  "26": {
+   "component": "control/break",
+   "values": {
+    "kind": "Exit the loop"
+   }
+  }
+ }
+}

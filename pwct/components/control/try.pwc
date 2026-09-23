@@ -1,0 +1,25 @@
+[component]
+name: Try / Catch Errors
+category: Control Structures
+description: Run steps and handle the errors that may happen.
+
+[interaction]
+title Try / Except
+text! error | Error type | Exception
+text var | Error variable | e
+check finally | Add a Finally part | 0
+
+[template]
+<PWCT:NEWSTEP> Try
+try:
+<PWCT:IF> <var>
+<PWCT:NEWSTEP> Catch <error> as <var>
+except <error> as <var|ident>:
+<PWCT:ELSE>
+<PWCT:NEWSTEP> Catch <error>
+except <error>:
+<PWCT:ENDIF>
+<PWCT:IF> <finally>
+<PWCT:NEWSTEP> Finally
+finally:
+<PWCT:ENDIF>

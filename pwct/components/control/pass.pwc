@@ -1,0 +1,11 @@
+[component]
+name: Do Nothing (pass)
+category: Control Structures
+description: An empty statement.
+
+[interaction]
+help Python needs at least one statement inside a block.
+
+[template]
+<PWCT:NEWSTEP> Do nothing
+pass
