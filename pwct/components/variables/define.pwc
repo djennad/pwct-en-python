@@ -1,0 +1,36 @@
+[component]
+name: Define Variable
+category: Variables
+description: Create a new variable with a starting value and type.
+
+[interaction]
+title Define Variable
+text! var | Name | total
+list type | Type | Number | Number, Text, True/False, List, Dictionary, Nothing (None)
+text value | Starting value | 0
+help For Text the value is written as a string, other types take an expression.
+
+[template]
+<PWCT:NEWSTEP> Define variable <var> (<type>)
+<PWCT:IF> <type> == Text
+<var|ident> = <value|repr>
+<PWCT:ENDIF>
+<PWCT:IF> <type> == Number
+<var|ident> = <value|or_none>
+<PWCT:ENDIF>
+<PWCT:IF> <type> == True/False
+<PWCT:IF> <value>
+<var|ident> = True
+<PWCT:ELSE>
+<var|ident> = False
+<PWCT:ENDIF>
+<PWCT:ENDIF>
+<PWCT:IF> <type> == List
+<var|ident> = [<value>]
+<PWCT:ENDIF>
+<PWCT:IF> <type> == Dictionary
+<var|ident> = {<value>}
+<PWCT:ENDIF>
+<PWCT:IF> <type> == Nothing (None)
+<var|ident> = None
+<PWCT:ENDIF>

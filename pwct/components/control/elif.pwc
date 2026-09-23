@@ -1,0 +1,13 @@
+[component]
+name: Else If
+category: Control Structures
+position: after
+description: Another condition to check when the previous If is false. Put it after an If step.
+
+[interaction]
+title Else If
+text! cond | Condition | x < 0
+
+[template]
+<PWCT:NEWSTEP> Else If <cond>
+elif <cond>:

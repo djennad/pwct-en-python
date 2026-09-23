@@ -1,0 +1,13 @@
+[component]
+name: Wait
+category: Date & Time
+description: Pause the program for some seconds.
+
+[interaction]
+title Wait
+text! seconds | Seconds | 1
+
+[template]
+<PWCT:NEWSTEP> Wait <seconds> second(s)
+<PWCT:IMPORT> time
+time.sleep(<seconds>)

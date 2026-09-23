@@ -1,0 +1,14 @@
+[component]
+name: Set Attribute
+category: Classes & Objects
+description: Set the value of an object attribute.
+
+[interaction]
+title Set Attribute
+text! obj | Object | self
+text! attr | Attribute | name
+text! value | Value (expression) | name
+
+[template]
+<PWCT:NEWSTEP> <obj>.<attr> = <value>
+<obj>.<attr|ident> = <value>

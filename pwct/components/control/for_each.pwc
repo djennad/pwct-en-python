@@ -1,0 +1,20 @@
+[component]
+name: For Each
+category: Control Structures
+description: Repeat the steps inside for every item in a list, text or other collection.
+
+[interaction]
+title For Each
+text! var | Item variable | item
+text! items | In (collection) | items
+check index | Also give me the index | 0
+text idx | Index variable | i
+
+[template]
+<PWCT:IF> <index>
+<PWCT:NEWSTEP> For each <var> in <items> (index <idx>)
+for <idx|ident>, <var|ident> in enumerate(<items>):
+<PWCT:ELSE>
+<PWCT:NEWSTEP> For each <var> in <items>
+for <var|ident> in <items>:
+<PWCT:ENDIF>

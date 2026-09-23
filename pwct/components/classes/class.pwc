@@ -1,0 +1,31 @@
+[component]
+name: Define Class
+category: Classes & Objects
+description: Create a new class with an optional constructor and attributes.
+
+[interaction]
+title Define Class
+text! name | Class name | Person
+text parent | Parent class |
+title Constructor
+text attrs | Attributes (separated by commas) | name, age
+
+[template]
+<PWCT:NEWSTEP> Class <name>
+<PWCT:IF> <parent>
+class <name|ident>(<parent>):
+<PWCT:ELSE>
+class <name|ident>:
+<PWCT:ENDIF>
+<PWCT:IF> <attrs>
+<PWCT:PUTMARK> 2
+<PWCT:SETMARK> 2
+<PWCT:NEWSTEP> Constructor (<attrs>)
+def __init__(self, <attrs>):
+<PWCT:PUTMARK> 3
+<PWCT:SETMARK> 3
+<PWCT:NEWSTEP> Set attributes <attrs>
+<PWCT:FOREACH> attr in <attrs>
+self.<attr|name> = <attr|name>
+<PWCT:ENDFOREACH>
+<PWCT:ENDIF>

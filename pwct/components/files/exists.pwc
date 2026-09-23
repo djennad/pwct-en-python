@@ -1,0 +1,20 @@
+[component]
+name: File Exists
+category: Files
+description: Check if a file or folder exists (If step).
+
+[interaction]
+title File Exists
+text! path | Path | output.txt
+check negate | Check that it does NOT exist | 0
+
+[template]
+<PWCT:IF> <negate>
+<PWCT:NEWSTEP> If file <path> does not exist
+<PWCT:IMPORT> os
+if not os.path.exists(<path|repr>):
+<PWCT:ELSE>
+<PWCT:NEWSTEP> If file <path> exists
+<PWCT:IMPORT> os
+if os.path.exists(<path|repr>):
+<PWCT:ENDIF>

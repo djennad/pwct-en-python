@@ -1,0 +1,14 @@
+[component]
+name: Current Date & Time
+category: Date & Time
+description: Get the current date / time as text.
+
+[interaction]
+title Now
+text! var | Variable | now
+text fmt | Format | %Y-%m-%d %H:%M:%S
+
+[template]
+<PWCT:NEWSTEP> <var> = current date/time
+<PWCT:IMPORT> datetime
+<var|ident> = datetime.datetime.now().strftime(<fmt|repr>)

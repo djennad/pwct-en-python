@@ -1,0 +1,18 @@
+[component]
+name: Remove Item from List
+category: Lists & Dictionaries
+description: Remove an item from a list by value or by position.
+
+[interaction]
+title Remove Item
+text! lst | List | items
+list by | Remove by | Value | Value, Position
+text! value | Value / Position | x
+
+[template]
+<PWCT:NEWSTEP> Remove <value> from <lst> (by <by>)
+<PWCT:IF> <by> == Value
+<lst>.remove(<value>)
+<PWCT:ELSE>
+del <lst>[<value>]
+<PWCT:ENDIF>

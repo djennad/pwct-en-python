@@ -1,0 +1,17 @@
+[component]
+name: Exit Loop
+category: Control Structures
+description: Stop the loop (break) or skip to the next iteration (continue).
+
+[interaction]
+title Exit Loop
+list kind | Action | Exit the loop | Exit the loop, Go to next iteration
+
+[template]
+<PWCT:IF> <kind> == Exit the loop
+<PWCT:NEWSTEP> Exit loop
+break
+<PWCT:ELSE>
+<PWCT:NEWSTEP> Next iteration
+continue
+<PWCT:ENDIF>

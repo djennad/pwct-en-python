@@ -1,0 +1,18 @@
+[component]
+name: Write Text File
+category: Files
+description: Write text to a file (replace it or add to the end).
+
+[interaction]
+title Write File
+text! path | File name | output.txt
+text! content | Text (expression) | "Hello\n"
+list mode | Mode | Replace | Replace, Append
+
+[template]
+<PWCT:NEWSTEP> Write to file <path> (<mode>)
+<PWCT:IF> <mode> == Append
+with open(<path|repr>, "a", encoding="utf-8") as f: f.write(<content>)
+<PWCT:ELSE>
+with open(<path|repr>, "w", encoding="utf-8") as f: f.write(<content>)
+<PWCT:ENDIF>

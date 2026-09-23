@@ -1,0 +1,27 @@
+[component]
+name: Print
+category: Console
+description: Show a message or the value of an expression on the screen.
+
+[interaction]
+title Print
+text msg | Message | Hello, World!
+list kind | The message is | Text | Text, Expression
+title Options
+check newline | Go to a new line after printing | 1
+
+[template]
+<PWCT:NEWSTEP> Print <msg>
+<PWCT:IF> <kind> == Text
+<PWCT:IF> <newline>
+print(<msg|repr>)
+<PWCT:ELSE>
+print(<msg|repr>, end="")
+<PWCT:ENDIF>
+<PWCT:ELSE>
+<PWCT:IF> <newline>
+print(<msg>)
+<PWCT:ELSE>
+print(<msg>, end="")
+<PWCT:ENDIF>
+<PWCT:ENDIF>

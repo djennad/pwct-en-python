@@ -1,0 +1,18 @@
+[component]
+name: Increment / Decrement
+category: Variables
+description: Add to or subtract from a variable.
+
+[interaction]
+title Increment
+text! var | Variable | counter
+list op | Operation | Increment | Increment, Decrement
+text! step | By | 1
+
+[template]
+<PWCT:NEWSTEP> <op> <var> by <step>
+<PWCT:IF> <op> == Increment
+<var> += <step>
+<PWCT:ELSE>
+<var> -= <step>
+<PWCT:ENDIF>

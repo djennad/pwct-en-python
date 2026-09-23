@@ -1,0 +1,16 @@
+[component]
+name: Main Program
+category: Functions
+description: Steps that run only when this file is started directly.
+
+[interaction]
+help The steps inside run when the program starts (if __name__ == "__main__").
+check call | Call a main function | 0
+text func | Function to call | main
+
+[template]
+<PWCT:NEWSTEP> Main Program
+if __name__ == "__main__":
+<PWCT:IF> <call>
+    <func|ident>()
+<PWCT:ENDIF>

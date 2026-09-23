@@ -1,0 +1,24 @@
+[component]
+name: Import Module
+category: Modules
+description: Use a Python module (library).
+
+[interaction]
+title Import
+text! module | Module | math
+text names | Import only these names (separated by commas) |
+text alias | Alias (as) |
+
+[template]
+<PWCT:IF> <names>
+<PWCT:NEWSTEP> From <module> import <names>
+from <module> import <names>
+<PWCT:ELSE>
+<PWCT:IF> <alias>
+<PWCT:NEWSTEP> Import <module> as <alias>
+import <module> as <alias|ident>
+<PWCT:ELSE>
+<PWCT:NEWSTEP> Import <module>
+import <module>
+<PWCT:ENDIF>
+<PWCT:ENDIF>

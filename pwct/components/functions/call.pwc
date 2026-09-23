@@ -1,0 +1,19 @@
+[component]
+name: Call Function
+category: Functions
+description: Run a function, optionally saving its result in a variable.
+
+[interaction]
+title Call Function
+text! name | Function | my_function
+text args | Arguments (separated by commas) |
+text result | Save result in variable |
+
+[template]
+<PWCT:IF> <result>
+<PWCT:NEWSTEP> <result> = Call <name>(<args>)
+<result> = <name>(<args>)
+<PWCT:ELSE>
+<PWCT:NEWSTEP> Call <name>(<args>)
+<name>(<args>)
+<PWCT:ENDIF>

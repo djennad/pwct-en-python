@@ -1,0 +1,25 @@
+[component]
+name: Button
+category: GUI (Tkinter)
+description: A button that runs steps when clicked. Put the steps under "When clicked".
+
+[interaction]
+title Button
+text! var | Variable | btn
+text! parent | Window | win
+text text | Caption | Click Me
+title Position
+text x | X | 20
+text y | Y | 60
+
+[template]
+<PWCT:NEWSTEP> Button <var>: <text>
+<PWCT:PUTMARK> 2
+<PWCT:SETMARK> 2
+<PWCT:NEWSTEP> When <var> is clicked
+def <var|ident>_click():
+<PWCT:SETMARK> 2
+<PWCT:NEWSTEP> Create button <var>
+<PWCT:IMPORT> import tkinter as tk
+<var|ident> = tk.Button(<parent>, text=<text|repr>, command=<var|ident>_click)
+<var|ident>.place(x=<x>, y=<y>)

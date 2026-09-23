@@ -1,0 +1,190 @@
+{
+ "format": "pwct-python",
+ "version": 1,
+ "name": "GUI Counter",
+ "next_id": 20,
+ "root": {
+  "id": "1",
+  "title": "Start Here",
+  "children": [
+   {
+    "id": "3",
+    "title": "Define variable count (Number)",
+    "code": [
+     "count = 0"
+    ],
+    "interaction": "2",
+    "num": 1
+   },
+   {
+    "id": "5",
+    "title": "Window win: Counter",
+    "code": [
+     "win = tk.Tk()",
+     "win.title('Counter')",
+     "win.geometry(\"300x160\")"
+    ],
+    "imports": [
+     "import tkinter as tk",
+     "from tkinter import messagebox"
+    ],
+    "interaction": "4",
+    "num": 1,
+    "children": [
+     {
+      "id": "6",
+      "title": "Controls",
+      "interaction": "4",
+      "num": 2,
+      "children": [
+       {
+        "id": "9",
+        "title": "Label lbl: Clicks: 0",
+        "code": [
+         "lbl = tk.Label(win, text='Clicks: 0', font=(\"Arial\", 16))",
+         "lbl.place(x=90, y=20)"
+        ],
+        "imports": [
+         "import tkinter as tk"
+        ],
+        "interaction": "8",
+        "num": 1
+       },
+       {
+        "id": "11",
+        "title": "Button btn: Click Me",
+        "interaction": "10",
+        "num": 1,
+        "children": [
+         {
+          "id": "12",
+          "title": "When btn is clicked",
+          "code": [
+           "def btn_click():"
+          ],
+          "interaction": "10",
+          "num": 2,
+          "children": [
+           {
+            "id": "15",
+            "title": "Use the global counter",
+            "code": [
+             "global count"
+            ],
+            "interaction": "14",
+            "num": 1
+           },
+           {
+            "id": "17",
+            "title": "Increment count by 1",
+            "code": [
+             "count += 1"
+            ],
+            "interaction": "16",
+            "num": 1
+           },
+           {
+            "id": "19",
+            "title": "lbl text = \"Clicks: \" + str(count)",
+            "code": [
+             "lbl.config(text=\"Clicks: \" + str(count))"
+            ],
+            "interaction": "18",
+            "num": 1
+           }
+          ]
+         },
+         {
+          "id": "13",
+          "title": "Create button btn",
+          "code": [
+           "btn = tk.Button(win, text='Click Me', command=btn_click)",
+           "btn.place(x=110, y=80)"
+          ],
+          "imports": [
+           "import tkinter as tk"
+          ],
+          "interaction": "10",
+          "num": 3
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "7",
+    "title": "Show window win",
+    "code": [
+     "win.mainloop()"
+    ],
+    "interaction": "4",
+    "num": 3
+   }
+  ]
+ },
+ "interactions": {
+  "2": {
+   "component": "variables/define",
+   "values": {
+    "var": "count",
+    "type": "Number",
+    "value": "0"
+   }
+  },
+  "4": {
+   "component": "gui/window",
+   "values": {
+    "var": "win",
+    "title": "Counter",
+    "width": "300",
+    "height": "160",
+    "show": "1"
+   }
+  },
+  "8": {
+   "component": "gui/label",
+   "values": {
+    "var": "lbl",
+    "parent": "win",
+    "text": "Clicks: 0",
+    "font": "16",
+    "x": "90",
+    "y": "20"
+   }
+  },
+  "10": {
+   "component": "gui/button",
+   "values": {
+    "var": "btn",
+    "parent": "win",
+    "text": "Click Me",
+    "x": "110",
+    "y": "80"
+   }
+  },
+  "14": {
+   "component": "other/code",
+   "values": {
+    "title": "Use the global counter",
+    "code": "global count"
+   }
+  },
+  "16": {
+   "component": "variables/increment",
+   "values": {
+    "var": "count",
+    "op": "Increment",
+    "step": "1"
+   }
+  },
+  "18": {
+   "component": "gui/set_text",
+   "values": {
+    "var": "lbl",
+    "value": "\"Clicks: \" + str(count)"
+   }
+  }
+ }
+}

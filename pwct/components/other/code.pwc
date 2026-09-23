@@ -1,0 +1,13 @@
+[component]
+name: Python Code
+category: Other
+description: Write any Python statements directly.
+
+[interaction]
+title Python Code
+text title | Step title | Custom code
+memo! code | Code | x = 1
+
+[template]
+<PWCT:NEWSTEP> <title>
+<code>

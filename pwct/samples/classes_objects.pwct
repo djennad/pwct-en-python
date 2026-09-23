@@ -1,0 +1,231 @@
+{
+ "format": "pwct-python",
+ "version": 1,
+ "name": "Classes and Objects",
+ "next_id": 26,
+ "root": {
+  "id": "1",
+  "title": "Start Here",
+  "children": [
+   {
+    "id": "3",
+    "title": "Import math",
+    "code": [
+     "import math"
+    ],
+    "interaction": "2",
+    "num": 1
+   },
+   {
+    "id": "5",
+    "title": "Class Circle",
+    "code": [
+     "class Circle:"
+    ],
+    "interaction": "4",
+    "num": 1,
+    "children": [
+     {
+      "id": "6",
+      "title": "Constructor (radius)",
+      "code": [
+       "def __init__(self, radius):"
+      ],
+      "interaction": "4",
+      "num": 2,
+      "children": [
+       {
+        "id": "7",
+        "title": "Set attributes radius",
+        "code": [
+         "self.radius = radius"
+        ],
+        "interaction": "4",
+        "num": 3
+       }
+      ]
+     },
+     {
+      "id": "9",
+      "title": "Method area()",
+      "code": [
+       "def area(self):"
+      ],
+      "interaction": "8",
+      "num": 1,
+      "children": [
+       {
+        "id": "11",
+        "title": "Return math.pi * self.radius ** 2",
+        "code": [
+         "return math.pi * self.radius ** 2"
+        ],
+        "interaction": "10",
+        "num": 1
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "13",
+    "title": "Class Rectangle",
+    "code": [
+     "class Rectangle:"
+    ],
+    "interaction": "12",
+    "num": 1,
+    "children": [
+     {
+      "id": "14",
+      "title": "Constructor (width, height)",
+      "code": [
+       "def __init__(self, width, height):"
+      ],
+      "interaction": "12",
+      "num": 2,
+      "children": [
+       {
+        "id": "15",
+        "title": "Set attributes width, height",
+        "code": [
+         "self.width = width",
+         "self.height = height"
+        ],
+        "interaction": "12",
+        "num": 3
+       }
+      ]
+     },
+     {
+      "id": "17",
+      "title": "Method area()",
+      "code": [
+       "def area(self):"
+      ],
+      "interaction": "16",
+      "num": 1,
+      "children": [
+       {
+        "id": "19",
+        "title": "Return self.width * self.height",
+        "code": [
+         "return self.width * self.height"
+        ],
+        "interaction": "18",
+        "num": 1
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "21",
+    "title": "Define variable shapes (List)",
+    "code": [
+     "shapes = [Circle(1), Circle(2.5), Rectangle(3, 4)]"
+    ],
+    "interaction": "20",
+    "num": 1
+   },
+   {
+    "id": "23",
+    "title": "For each shape in shapes",
+    "code": [
+     "for shape in shapes:"
+    ],
+    "interaction": "22",
+    "num": 1,
+    "children": [
+     {
+      "id": "25",
+      "title": "Print  type(shape).__name__, \"area =\", round(shape.area(), 2)",
+      "code": [
+       "print(type(shape).__name__, \"area =\", round(shape.area(), 2))"
+      ],
+      "interaction": "24",
+      "num": 1
+     }
+    ]
+   }
+  ]
+ },
+ "interactions": {
+  "2": {
+   "component": "modules/import",
+   "values": {
+    "module": "math",
+    "names": "",
+    "alias": ""
+   }
+  },
+  "4": {
+   "component": "classes/class",
+   "values": {
+    "name": "Circle",
+    "parent": "",
+    "attrs": "radius"
+   }
+  },
+  "8": {
+   "component": "classes/method",
+   "values": {
+    "name": "area",
+    "params": "",
+    "kind": "Normal"
+   }
+  },
+  "10": {
+   "component": "functions/return",
+   "values": {
+    "value": "math.pi * self.radius ** 2"
+   }
+  },
+  "12": {
+   "component": "classes/class",
+   "values": {
+    "name": "Rectangle",
+    "parent": "",
+    "attrs": "width, height"
+   }
+  },
+  "16": {
+   "component": "classes/method",
+   "values": {
+    "name": "area",
+    "params": "",
+    "kind": "Normal"
+   }
+  },
+  "18": {
+   "component": "functions/return",
+   "values": {
+    "value": "self.width * self.height"
+   }
+  },
+  "20": {
+   "component": "variables/define",
+   "values": {
+    "var": "shapes",
+    "type": "List",
+    "value": "Circle(1), Circle(2.5), Rectangle(3, 4)"
+   }
+  },
+  "22": {
+   "component": "control/for_each",
+   "values": {
+    "var": "shape",
+    "items": "shapes",
+    "index": "0",
+    "idx": "i"
+   }
+  },
+  "24": {
+   "component": "console/print_values",
+   "values": {
+    "label": "",
+    "values": "type(shape).__name__, \"area =\", round(shape.area(), 2)"
+   }
+  }
+ }
+}

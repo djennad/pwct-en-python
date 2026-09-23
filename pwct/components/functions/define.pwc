@@ -1,0 +1,17 @@
+[component]
+name: Define Function
+category: Functions
+description: Create a function (a group of steps with a name) that can be called later.
+
+[interaction]
+title Define Function
+text! name | Function name | my_function
+text params | Parameters (separated by commas) |
+text doc | Description |
+
+[template]
+<PWCT:NEWSTEP> Function <name> (<params>)
+def <name|ident>(<params>):
+<PWCT:IF> <doc>
+    """<doc>"""
+<PWCT:ENDIF>

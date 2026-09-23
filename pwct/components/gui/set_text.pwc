@@ -1,0 +1,13 @@
+[component]
+name: Set Control Text
+category: GUI (Tkinter)
+description: Change the text of a label or button.
+
+[interaction]
+title Set Text
+text! var | Control | lbl
+text! value | New text (expression) | "Done"
+
+[template]
+<PWCT:NEWSTEP> <var> text = <value>
+<var>.config(text=<value>)

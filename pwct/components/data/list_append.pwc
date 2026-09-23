@@ -1,0 +1,13 @@
+[component]
+name: Add Item to List
+category: Lists & Dictionaries
+description: Append a value to the end of a list.
+
+[interaction]
+title Add Item
+text! lst | List | items
+text! value | Item (expression) | x
+
+[template]
+<PWCT:NEWSTEP> Add <value> to <lst>
+<lst>.append(<value>)

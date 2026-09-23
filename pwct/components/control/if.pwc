@@ -1,0 +1,18 @@
+[component]
+name: If
+category: Control Structures
+description: Run the steps inside only when a condition is true, with optional Else.
+
+[interaction]
+title If Statement
+text! cond | Condition | x > 0
+title Options
+check else | Add an Else part | 0
+
+[template]
+<PWCT:NEWSTEP> If <cond>
+if <cond>:
+<PWCT:IF> <else>
+<PWCT:NEWSTEP> Else
+else:
+<PWCT:ENDIF>

@@ -1,0 +1,28 @@
+[component]
+name: Create Window
+category: GUI (Tkinter)
+description: Create the main window of a GUI application. Put the controls inside it.
+
+[interaction]
+title Window
+text! var | Window variable | win
+text title | Title | My Application
+text width | Width | 400
+text height | Height | 300
+check show | Show the window after the controls (mainloop) | 1
+
+[template]
+<PWCT:NEWSTEP> Window <var>: <title>
+<PWCT:IMPORT> import tkinter as tk
+<PWCT:IMPORT> from tkinter import messagebox
+<var|ident> = tk.Tk()
+<var|ident>.title(<title|repr>)
+<var|ident>.geometry("<width>x<height>")
+<PWCT:PUTMARK> 2
+<PWCT:SETMARK> 2
+<PWCT:NEWSTEP> Controls
+<PWCT:SETMARK> 1
+<PWCT:IF> <show>
+<PWCT:NEWSTEP> Show window <var>
+<var|ident>.mainloop()
+<PWCT:ENDIF>

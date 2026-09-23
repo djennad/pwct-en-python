@@ -1,0 +1,12 @@
+[component]
+name: Comment
+category: Other
+description: A note that explains the program (not executed).
+
+[interaction]
+title Comment
+memo! text | Comment | Write your comment here
+
+[template]
+<PWCT:NEWSTEP> <text|comment>
+<text|comment>

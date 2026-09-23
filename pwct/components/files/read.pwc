@@ -1,0 +1,18 @@
+[component]
+name: Read Text File
+category: Files
+description: Read a file into a variable (all text or a list of lines).
+
+[interaction]
+title Read File
+text! path | File name | output.txt
+text! var | Variable | text
+list how | Read as | Text | Text, List of lines
+
+[template]
+<PWCT:NEWSTEP> <var> = read file <path>
+<PWCT:IF> <how> == Text
+with open(<path|repr>, encoding="utf-8") as f: <var|ident> = f.read()
+<PWCT:ELSE>
+with open(<path|repr>, encoding="utf-8") as f: <var|ident> = f.read().splitlines()
+<PWCT:ENDIF>
