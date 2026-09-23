@@ -9,6 +9,8 @@ entry in the components tree (PAF).  A ``.pwc`` file has three sections::
     category: Console
     description: Print a message on the screen
     position: auto        (where to insert: auto, inside, after, before)
+    layout: rows          (rows: one field per row, flow: fields share a
+                           row until "enter", like the PWCT pages generator)
 
     [interaction]
     title Print
@@ -21,39 +23,71 @@ entry in the components tree (PAF).  A ``.pwc`` file has three sections::
     print(<msg|repr>)
 
 Interaction lines are ``kind name | label | default | options``.
-Kinds: ``title`` (page section), ``text``, ``memo`` (multi-line text),
-``check`` (value ``1`` or ``0``), ``list`` (comma separated options) and
-``help`` (a line of help text).  A ``!`` after the kind marks a required
-field.
+Kinds (the PWCT interaction script command in brackets):
+
+``title``      a title bar (TITLE)          ``help``       a line of help text
+``enter``      start a new row (ENTER)      ``page``       start a new page
+``text``       large text box (LARGEGET)    ``small``      small text box (SMALLGET)
+``memo``       multi-line text              ``check``      check box, ``1``/``0``
+``list``       list box (LISTBOX), the value is the chosen item
+``listindex``  list box, the value is the item number (1, 2 ...)
+
+A ``!`` after the kind marks a required field.  Options are separated by
+commas.  Labels and values can not contain ``|``.
 """
 
 import os
+import re
 
-from .template import TemplateError, expand
+from .template import DIRECTIVE_RE, PLACEHOLDER_RE, TemplateError, expand
 
 BUILTIN_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "components")
-FIELD_KINDS = {"text", "memo", "check", "list", "title", "help"}
+INPUT_KINDS = ("text", "small", "memo", "check", "list", "listindex")
+LAYOUT_KINDS = ("title", "help", "enter", "page")
+FIELD_KINDS = set(INPUT_KINDS) | set(LAYOUT_KINDS)
+KEY_RE = re.compile(r"^[A-Za-z0-9_\-]+(/[A-Za-z0-9_\-]+)*$")
+
+
+def user_dir():
+    """Where installed (user) components are kept."""
+    home = os.environ.get("PWCT_HOME") or os.path.join(os.path.expanduser("~"), ".pwct-python")
+    return os.path.join(home, "components")
 
 
 class Field:
     def __init__(self, kind, name="", label="", default="", options=None, required=False):
         self.kind = kind
         self.name = name
-        self.label = label or name
+        self.label = label            # may be empty: the name is shown
         self.default = default
         self.options = options or []
         self.required = required
 
     @property
     def is_input(self):
-        return self.kind not in ("title", "help")
+        return self.kind in INPUT_KINDS
+
+    @property
+    def caption(self):
+        return self.label or self.name
+
+    def to_line(self):
+        head = self.kind + ("!" if self.required else "")
+        if not self.is_input:
+            return (head + " " + self.label).rstrip()
+        default = self.default.replace("\n", "\\n") if self.kind == "memo" else self.default
+        parts = [self.name, self.label, default, ", ".join(self.options)]
+        while parts and not parts[-1]:
+            parts.pop()
+        return head + " " + " | ".join(parts)
 
 
 class Component:
     def __init__(self, key, name, category, description, fields, template, path=None,
-                 position="auto"):
+                 position="auto", layout="rows"):
         self.key = key
         self.position = position
+        self.layout = layout
         self.name = name
         self.category = category
         self.description = description
@@ -71,6 +105,8 @@ class Component:
                 values[f.name] = "1" if f.default.strip() in ("1", "true", "yes") else "0"
             elif f.kind == "list" and not f.default and f.options:
                 values[f.name] = f.options[0]
+            elif f.kind == "listindex" and not f.default:
+                values[f.name] = "1" if f.options else ""
             elif f.kind == "memo":
                 values[f.name] = f.default.replace("\\n", "\n")
             else:
@@ -82,13 +118,30 @@ class Component:
         errors = []
         for f in self.input_fields():
             if f.required and not str(values.get(f.name, "")).strip():
-                errors.append("'%s' is required" % f.label)
+                errors.append("'%s' is required" % f.caption)
         return errors
 
     def expand(self, values):
         full = self.default_values()
         full.update(values)
         return expand(self.template, full)
+
+    @property
+    def builtin(self):
+        return bool(self.path) and os.path.abspath(self.path).startswith(os.path.abspath(BUILTIN_DIR))
+
+    def to_text(self):
+        """The ``.pwc`` file text of the component."""
+        meta = ["name: " + self.name, "category: " + self.category]
+        if self.description:
+            meta.append("description: " + self.description)
+        if self.position != "auto":
+            meta.append("position: " + self.position)
+        if self.layout != "rows":
+            meta.append("layout: " + self.layout)
+        return ("[component]\n" + "\n".join(meta) + "\n\n[interaction]\n"
+                + "".join(f.to_line() + "\n" for f in self.fields)
+                + "\n[template]\n" + self.template.strip("\n") + "\n")
 
     def __repr__(self):
         return "<Component %s>" % self.key
@@ -101,7 +154,7 @@ def parse_field(line):
     kind = kind.rstrip("!")
     if kind not in FIELD_KINDS:
         raise ValueError("unknown field kind %r" % head)
-    if kind in ("title", "help"):
+    if kind in LAYOUT_KINDS:
         return Field(kind, label=rest.strip())
     parts = [p.strip() for p in rest.split("|")]
     parts += [""] * (4 - len(parts))
@@ -145,7 +198,7 @@ def parse_component(text, key, path=None):
     name = meta.get("name") or key.rsplit("/", 1)[-1]
     return Component(key, name, meta.get("category", "Other"),
                      meta.get("description", ""), fields, template, path,
-                     meta.get("position", "auto").lower())
+                     meta.get("position", "auto").lower(), meta.get("layout", "rows").lower())
 
 
 class Library:
@@ -167,11 +220,46 @@ class Library:
 
     @classmethod
     def default(cls):
+        """The built-in components, then the installed ones (they replace a
+        built-in component with the same key), then the folders listed in
+        ``PWCT_COMPONENTS``."""
         lib = cls().load_dir(BUILTIN_DIR)
-        for extra in os.environ.get("PWCT_COMPONENTS", "").split(os.pathsep):
-            if extra and os.path.isdir(extra):
-                lib.load_dir(extra)
+        extra = [user_dir()] + os.environ.get("PWCT_COMPONENTS", "").split(os.pathsep)
+        for folder in extra:
+            if folder and os.path.isdir(folder):
+                lib.load_dir(folder)
         return lib
+
+    def install(self, component, folder=None):
+        """Save a component in the user folder ("Install Component")."""
+        if not KEY_RE.match(component.key or ""):
+            raise ValueError("Invalid component file name: %r (use letters, digits, _ and /)"
+                             % component.key)
+        text = component.to_text()
+        parse_component(text, component.key)          # never install a broken file
+        path = os.path.join(folder or user_dir(), *component.key.split("/")) + ".pwc"
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8") as fh:
+            fh.write(text)
+        component.path = path
+        self.components[component.key] = component
+        return path
+
+    def uninstall(self, key):
+        """Remove an installed component (built-in ones can not be removed)."""
+        comp = self.components.get(key)
+        if comp is None:
+            raise KeyError(key)
+        if comp.builtin or not comp.path:
+            raise ValueError("%s is a built-in component" % key)
+        os.remove(comp.path)
+        del self.components[key]
+        if os.path.exists(os.path.join(BUILTIN_DIR, *key.split("/")) + ".pwc"):
+            builtin = Library().load_dir(BUILTIN_DIR)
+            self.components[key] = builtin[key]
+
+    def domains(self):
+        return sorted({c.category for c in self})
 
     def __getitem__(self, key):
         return self.components[key]
@@ -197,3 +285,47 @@ class Library:
         return [c for c in self
                 if all(w in (c.name + " " + c.category + " " + c.description).lower()
                        for w in words)]
+
+
+# ------------------------------------------------ matching (Transporter)
+def page_variables(component):
+    return [f.name for f in component.fields if f.is_input]
+
+
+def mask_variables(template):
+    """Placeholders used in the code mask and variables it creates."""
+    used, created = [], []
+    for line in template.splitlines():
+        match = DIRECTIVE_RE.match(line)
+        if match and match.group(1).upper() in ("NEWVAR", "SELECTVAR"):
+            name = match.group(2).strip("<> \t")
+            if name and name not in created:
+                created.append(name)
+        if match and match.group(1).upper() == "FOREACH":
+            name = match.group(2).split(" in ")[0].strip()
+            if name and name not in created:
+                created.append(name)
+        text = line if not match else match.group(2)
+        for m in PLACEHOLDER_RE.finditer(text):
+            if m.group(1) not in used:
+                used.append(m.group(1))
+    return used, created
+
+
+def matching(component):
+    """``[(page variable, mask variable, status)]`` like the Matching page
+    of the Transporter Designer."""
+    pages = page_variables(component)
+    used, created = mask_variables(component.template)
+    lower_pages = {p.lower(): p for p in pages}
+    lower_created = {c.lower() for c in created}
+    rows = []
+    for p in pages:
+        found = [u for u in used if u.lower() == p.lower()]
+        rows.append((p, found[0] if found else "", "OK" if found else "not used in the code mask"))
+    for u in used:
+        if u.lower() in lower_pages:
+            continue
+        status = "template variable" if u.lower() in lower_created else "no page variable"
+        rows.append(("", u, status))
+    return rows

@@ -5,6 +5,7 @@
     python -m pwct build project.pwct    write the Python code (-o file.py)
     python -m pwct run project.pwct      generate and run the program
     python -m pwct components            list the available components
+    python -m pwct import-trf FILE.TRF   convert a PWCT 1.x component (-o file.pwc)
 """
 
 import argparse
@@ -40,6 +41,19 @@ def cmd_run(args):
         os.remove(path)
 
 
+def cmd_import_trf(args):
+    from .engine.legacy import import_trf
+    comp = import_trf(args.trf)
+    text = comp.to_text()
+    if args.output:
+        with open(args.output, "w", encoding="utf-8") as fh:
+            fh.write(text)
+        print("Written", args.output)
+    else:
+        sys.stdout.write(text)
+    return 0
+
+
 def cmd_components(args):
     for category, comps in Library.default().categories().items():
         print(category)
@@ -50,7 +64,8 @@ def cmd_components(args):
 
 def main(argv=None):
     argv = sys.argv[1:] if argv is None else argv
-    commands = {"build": cmd_build, "run": cmd_run, "components": cmd_components}
+    commands = {"build": cmd_build, "run": cmd_run, "components": cmd_components,
+                "import-trf": cmd_import_trf}
     if argv and argv[0] in commands:
         parser = argparse.ArgumentParser(prog="pwct")
         sub = parser.add_subparsers(dest="command")
@@ -60,11 +75,15 @@ def main(argv=None):
         p = sub.add_parser("run", help="run a project")
         p.add_argument("project")
         sub.add_parser("components", help="list the components")
+        p = sub.add_parser("import-trf", help="convert a PWCT 1.x component (TRF) to .pwc")
+        p.add_argument("trf")
+        p.add_argument("-o", "--output")
         args = parser.parse_args(argv)
         return commands[args.command](args)
 
     parser = argparse.ArgumentParser(prog="pwct", description="PWCT-Python visual programming")
     parser.add_argument("project", nargs="?", help="project file (.pwct) to open")
+    parser.add_argument("--no-splash", action="store_true", help="do not show the welcome window")
     parser.add_argument("--version", action="version", version="PWCT-Python " + __version__)
     args = parser.parse_args(argv)
     try:
@@ -72,7 +91,7 @@ def main(argv=None):
     except ImportError as exc:
         print("The GUI needs Tkinter (%s).\nOn Debian/Ubuntu: sudo apt install python3-tk" % exc)
         return 1
-    gui_main(args.project)
+    gui_main(args.project, splash=not args.no_splash)
     return 0
 
 

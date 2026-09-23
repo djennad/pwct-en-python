@@ -1,10 +1,16 @@
-"""The PWCT-Python environment: the Goal Designer window.
+"""The PWCT-Python environment.
 
-The layout follows the goal designer of the original PWCT (``rpwi.scx``):
-a white header with the goal and the "Goal Designer" title, a cyan band
-with the path of the active step, a purple bar to switch between the
-steps tree and the other views, and the buttons at the bottom (New Step,
-Delete Step, Edit Step, move up / down, Interact, Modify, Close).
+Like the main window of the original PWCT (``DoubleS.scx``) it has the
+standard toolbar at the top, the "Designers" bar on the left (Goal,
+Transporter, Interaction) and a status bar.  The designers are:
+
+* the Goal Designer (``rpwi.scx``): a white header with the goal and the
+  "Goal Designer" title, a cyan band with the path of the active step, a
+  purple bar to switch between the steps tree and the other views, and the
+  buttons at the bottom (New Step, Delete Step, Edit Step, move up / down,
+  Interact, Modify, Close);
+* the Transporter Designer and the Interaction Designer (``designer.py``)
+  to make new components.
 """
 
 import os
@@ -17,12 +23,38 @@ from ..engine.generator import step_at_line
 from ..engine.project import Step
 from . import theme
 from .browser import ComponentBrowser
+from .designer import ComponentStudio, InteractionDesigner, TransporterDesigner
 from .interaction import InteractionPage
 from .runner import Runner
 
 FILE_TYPES = [("PWCT-Python project", "*.pwct"), ("All files", "*.*")]
 VIEWS = [("tree", "Steps Tree"), ("details", "Step Details"), ("code", "Source Code"),
          ("output", "Output")]
+DESIGNERS = [("goal", "Goal"), ("transporter", "Transporter"), ("interaction", "Interaction")]
+
+
+class ToolTip:
+    def __init__(self, widget, text):
+        self.widget, self.text, self.tip = widget, text, None
+        widget.bind("<Enter>", self.show, add="+")
+        widget.bind("<Leave>", self.hide, add="+")
+        widget.bind("<ButtonPress>", self.hide, add="+")
+
+    def show(self, event=None):
+        if self.tip or not self.text:
+            return
+        x = self.widget.winfo_rootx() + 12
+        y = self.widget.winfo_rooty() + self.widget.winfo_height() + 4
+        self.tip = tk.Toplevel(self.widget)
+        self.tip.wm_overrideredirect(True)
+        self.tip.geometry("+%d+%d" % (x, y))
+        tk.Label(self.tip, text=self.text, background="#ffffe1", relief="solid", borderwidth=1,
+                 font=("Arial", 9), padx=4, pady=2).pack()
+
+    def hide(self, event=None):
+        if self.tip:
+            self.tip.destroy()
+            self.tip = None
 
 
 class App(tk.Tk):
@@ -40,20 +72,33 @@ class App(tk.Tk):
         self.insert_mode = tk.StringVar(value="auto")
         self.disabled_var = tk.IntVar(value=0)
         self.view = "tree"
+        self.panel = "goal"
 
         self.title("PWCT-Python")
-        self.geometry("980x700")
-        self.minsize(760, 520)
-        self.configure(background=theme.WHITE)
+        self.geometry("1060x720")
+        self.minsize(820, 560)
+        self.configure(background=theme.GRAY)
         self.fonts = theme.Fonts(self)
         self.icons = theme.make_icons(self)
         self._styles()
         self._menu()
+        self._toolbar()
+        self._statusbar()
+        self._designers_bar()
+        self.content = tk.Frame(self, background=theme.GRAY)
+        self.content.pack(side="left", fill="both", expand=True)
+        self.goal_panel = tk.Frame(self.content, background=theme.WHITE)
         self._header()
         self._bottom()
         self._views()
+        self.studio = ComponentStudio(self)
+        self.transporter_designer = TransporterDesigner(self.content, self, self.studio)
+        self.interaction_designer = InteractionDesigner(self.content, self, self.studio)
+        self.panels = {"goal": self.goal_panel, "transporter": self.transporter_designer,
+                       "interaction": self.interaction_designer}
         self._keys()
         self.show_view("tree")
+        self.show_panel("goal")
         self.protocol("WM_DELETE_WINDOW", self.quit_app)
         self._poll_job = self.after(100, self._poll_runner)
 
@@ -115,8 +160,37 @@ class App(tk.Tk):
         bar.add_cascade(label="Edit", menu=m)
 
         m = tk.Menu(bar, tearoff=False)
+        m.add_command(label="RPWI - Goal Designer", command=self.show_goal_designer)
+        m.add_command(label="Components Browser (Interact)", accelerator="Ctrl+Space", command=self.interact)
+        m.add_separator()
+        m.add_command(label="Install Component", command=lambda: self.studio.install())
+        m.add_command(label="Uninstall Component", command=lambda: self.studio.uninstall())
+        m.add_command(label="Components Folder...", command=self.show_components_folder)
+        bar.add_cascade(label="RPWI", menu=m)
+
+        m = tk.Menu(bar, tearoff=False)
+        m.add_command(label="Transporter Designer", command=self.show_transporter_designer)
+        m.add_command(label="Interaction Designer", command=self.show_interaction_designer)
+        m.add_separator()
+        m.add_command(label="New Component", command=lambda: (self.studio.new(), self.show_transporter_designer()))
+        m.add_command(label="Open Component...", command=lambda: (self.studio.open_library(),
+                                                                  self.show_transporter_designer()))
+        m.add_command(label="Open Component File...", command=lambda: (self.studio.open_file(),
+                                                                       self.show_transporter_designer()))
+        m.add_command(label="Save Component", command=lambda: self.studio.save())
+        m.add_command(label="Save Component As...", command=lambda: self.studio.save_as())
+        m.add_separator()
+        m.add_command(label="Import PWCT 1.x Component (TRF)...",
+                      command=lambda: (self.studio.import_trf(), self.show_transporter_designer()))
+        m.add_command(label="Import Interaction Script (ISF)...",
+                      command=lambda: (self.studio.import_isf(), self.show_interaction_designer()))
+        m.add_separator()
+        m.add_command(label="Test Component", command=self.show_test)
+        bar.add_cascade(label="Transporter", menu=m)
+
+        m = tk.Menu(bar, tearoff=False)
         for key, label in VIEWS:
-            m.add_command(label=label, command=lambda k=key: self.show_view(k))
+            m.add_command(label=label, command=lambda k=key: (self.show_goal_designer(), self.show_view(k)))
         m.add_separator()
         m.add_command(label="Expand All", command=lambda: self._expand_all(True))
         m.add_command(label="Collapse All", command=lambda: self._expand_all(False))
@@ -146,9 +220,103 @@ class App(tk.Tk):
             else:
                 self.step_menu.add_command(label=label, command=cmd)
 
+    def _toolbar(self):
+        """The "Standard" toolbar of PWCT (``mytool.vcx``)."""
+        bar = tk.Frame(self, background=theme.FACE, relief="raised", borderwidth=1)
+        bar.pack(side="top", fill="x")
+        items = [("new", "New Goal (Ctrl+N)", self.new_file), ("open", "Open (Ctrl+O)", self.open_dialog),
+                 ("save", "Save (Ctrl+S)", self.save), None,
+                 ("cut", "Cut", self.cut), ("copy", "Copy", self.copy), ("paste", "Paste", self.paste), None,
+                 ("interact", "Interact - Components Browser (Ctrl+Space)", self.interact),
+                 ("run", "Run (F5)", self.run_program), ("stop", "Stop", self.stop_program), None,
+                 ("help", "Help", self.show_help), ("close", "Quit", self.quit_app)]
+        for item in items:
+            if item is None:
+                tk.Frame(bar, width=2, background=theme.GRAY).pack(side="left", fill="y", padx=6, pady=3)
+                continue
+            icon, tip, cmd = item
+            b = tk.Button(bar, image=self.icons[icon], command=cmd, width=26, height=24,
+                          relief="flat", background=theme.FACE, activebackground=theme.WHITE,
+                          overrelief="raised")
+            b.pack(side="left", padx=1, pady=2)
+            ToolTip(b, tip)
+        logo = tk.Frame(bar, background=theme.PURPLE, padx=8)
+        logo.pack(side="right", padx=4, pady=2, fill="y")
+        tk.Label(logo, text="PWCT", font=(self.fonts.title[0], 13), foreground=theme.WHITE,
+                 background=theme.PURPLE).pack(side="left")
+        tk.Label(logo, text=" Python", font=(self.fonts.normal[0], 9, "bold"), foreground=theme.CYAN,
+                 background=theme.PURPLE).pack(side="left")
+
+    def _statusbar(self):
+        self.status = tk.Label(self, text="", anchor="w", font=self.fonts.normal,
+                               background=theme.FACE, relief="sunken", padx=6)
+        self.status.pack(side="bottom", fill="x")
+
+    def _designers_bar(self):
+        """The vertical "Designers" bar of PWCT: rotated captions that switch
+        between the Goal Designer, the Transporter and the Interaction
+        designers."""
+        font = (self.fonts.normal[0], 13, "bold")
+        self.designers = tk.Canvas(self, width=34, background=theme.FACE, highlightthickness=0,
+                                   relief="raised", borderwidth=1)
+        self.designers.pack(side="left", fill="y")
+        self.designer_items = {}
+        y = 6
+        for key, text in DESIGNERS:
+            length = len(text) * 10 + 30
+            rect = self.designers.create_rectangle(3, y, 32, y + length, outline=theme.GRAY,
+                                                   fill=theme.FACE, tags=(key,))
+            label = self.designers.create_text(17, y + length / 2, text=text, angle=90, font=font,
+                                               fill=theme.BLACK, tags=(key,))
+            self.designer_items[key] = (rect, label)
+            self.designers.tag_bind(key, "<Button-1>", lambda e, k=key: self.show_panel(k))
+            self.designers.tag_bind(key, "<Enter>", lambda e, k=key: self._designer_hover(k, True))
+            self.designers.tag_bind(key, "<Leave>", lambda e, k=key: self._designer_hover(k, False))
+            y += length + 4
+
+    def _designer_hover(self, key, inside):
+        rect, label = self.designer_items[key]
+        active = inside or key == self.panel
+        self.designers.itemconfigure(rect, fill=theme.PURPLE if active else theme.FACE)
+        self.designers.itemconfigure(label, fill=theme.WHITE if active else theme.BLACK)
+        self.designers.configure(cursor="hand2" if inside else "")
+
+    def show_panel(self, key):
+        """Show the Goal Designer, the Transporter Designer or the
+        Interaction Designer."""
+        self.panel = key
+        for name, panel in self.panels.items():
+            if name != key:
+                panel.pack_forget()
+        self.panels[key].pack(fill="both", expand=True)
+        for name in self.designer_items:
+            self._designer_hover(name, False)
+        if key == "goal":
+            self.tree.focus_set()
+        self.update_title()
+
+    def show_goal_designer(self):
+        self.show_panel("goal")
+
+    def show_transporter_designer(self):
+        self.show_panel("transporter")
+
+    def show_interaction_designer(self):
+        self.show_panel("interaction")
+
+    def show_test(self):
+        self.show_panel("transporter")
+        tabs = self.transporter_designer.tabs
+        tabs.select(len(tabs.tabs()) - 1)
+
+    def library_changed(self):
+        """Components were installed or removed."""
+        self.update_title()
+        self.on_select()
+
     def _header(self):
         f = self.fonts
-        head = tk.Frame(self, background=theme.WHITE, height=54)
+        head = tk.Frame(self.goal_panel, background=theme.WHITE, height=54)
         head.pack(side="top", fill="x")
         tk.Label(head, text="Goal :", font=f.header, background=theme.WHITE).pack(
             side="left", padx=(6, 4), pady=8)
@@ -159,9 +327,9 @@ class App(tk.Tk):
         self.goal_box.bind("<<ComboboxSelected>>", lambda e: self._reveal(self.project.root.id))
         tk.Label(head, text="Goal Designer", font=f.title, foreground=theme.OLIVE,
                  background=theme.WHITE).pack(side="right", padx=16)
-        tk.Frame(self, height=2, background=theme.GRAY).pack(side="top", fill="x")
+        tk.Frame(self.goal_panel, height=2, background=theme.GRAY).pack(side="top", fill="x")
 
-        band = tk.Frame(self, background=theme.CYAN)
+        band = tk.Frame(self.goal_panel, background=theme.CYAN)
         band.pack(side="top", fill="x")
         self.path_var = tk.StringVar()
         self.path_box = ttk.Combobox(band, textvariable=self.path_var, state="readonly",
@@ -169,7 +337,7 @@ class App(tk.Tk):
         self.path_box.pack(fill="x", padx=5, pady=5)
         self.path_box.bind("<<ComboboxSelected>>", self._path_selected)
 
-        bar = tk.Frame(self, background=theme.PURPLE)
+        bar = tk.Frame(self.goal_panel, background=theme.PURPLE)
         bar.pack(side="top", fill="x")
         self.view_buttons = {}
         for key, label in VIEWS:
@@ -181,24 +349,27 @@ class App(tk.Tk):
         tk.Label(bar, text="The Tool of Programming Without Coding", font=f.header,
                  foreground=theme.WHITE, background=theme.PURPLE).pack(side="right", padx=10)
 
-    def _button(self, parent, text, icon, command, big=False, width=None):
-        b = tk.Button(parent, text=text, image=self.icons[icon] if icon else "", compound="left"
-                      if not big else "top", command=command, font=self.fonts.button,
+    def make_button(self, parent, text, icon, command, big=False, width=None, tip=None):
+        """A button like the ones of PWCT: an icon and a caption."""
+        b = tk.Button(parent, text=text, image=self.icons[icon or "blank"],
+                      compound="top" if big else "left", command=command, font=self.fonts.button,
                       background=theme.FACE, activebackground=theme.WHITE, padx=6,
                       width=width or (0 if text else 34), anchor="center")
+        if tip:
+            ToolTip(b, tip)
         return b
 
+    def tooltip(self, widget, text):
+        ToolTip(widget, text)
+
     def _bottom(self):
-        self.status = tk.Label(self, text="", anchor="w", font=self.fonts.normal,
-                               background=theme.FACE, relief="sunken", padx=6)
-        self.status.pack(side="bottom", fill="x")
-        panel = tk.Frame(self, background=theme.WHITE, padx=4, pady=6)
+        panel = tk.Frame(self.goal_panel, background=theme.WHITE, padx=4, pady=6)
         panel.pack(side="bottom", fill="x")
-        tk.Frame(self, height=2, background=theme.GRAY).pack(side="bottom", fill="x")
+        tk.Frame(self.goal_panel, height=2, background=theme.GRAY).pack(side="bottom", fill="x")
 
         left = tk.Frame(panel, background=theme.WHITE)
         left.pack(side="left")
-        B = self._button
+        B = self.make_button
         B(left, " New Step", "new", self.new_step, width=96).grid(row=0, column=0, padx=2, pady=2, sticky="w")
         B(left, " Delete Step", "delete", self.delete_step, width=106).grid(
             row=0, column=1, columnspan=2, padx=2, pady=2, sticky="w")
@@ -220,7 +391,7 @@ class App(tk.Tk):
             B(right, text, icon, cmd, big=True, width=84).pack(side="right", padx=4, ipady=2)
 
     def _views(self):
-        self.main = tk.Frame(self, background=theme.WHITE)
+        self.main = tk.Frame(self.goal_panel, background=theme.WHITE)
         self.main.pack(side="top", fill="both", expand=True)
         self.frames = {}
 
@@ -435,6 +606,14 @@ class App(tk.Tk):
             self.code.see("%d.0" % first)
 
     def update_title(self):
+        if getattr(self, "panel", "goal") != "goal" and hasattr(self, "studio"):
+            comp = self.studio.component
+            self.title("%s%s - PWCT-Python - %s Designer" % ("*" if self.studio.dirty else "",
+                                                               comp.name, self.panel.title()))
+            self.status.configure(text="Component : %s     File : %s.pwc     Domain : %s     "
+                                  "Components : %d" % (comp.name, comp.key, comp.category,
+                                                       len(self.library)))
+            return
         name = os.path.basename(self.path) if self.path else "Untitled"
         self.title("%s%s - PWCT-Python - Goal Designer" % ("*" if self.dirty else "", name))
         steps = sum(1 for _ in self.project.root.walk()) - 1
@@ -489,9 +668,16 @@ class App(tk.Tk):
 
     def interact(self):
         """Open the components browser, then the interaction page."""
+        self.show_goal_designer()
         key = ComponentBrowser(self, self.library, self.insert_mode, self.fonts, self.icons).run()
         if key:
             self.add_component(key)
+
+    def show_components_folder(self):
+        from ..engine.components import user_dir
+        messagebox.showinfo("Components Folder", "Installed components are saved in:\n%s\n\n"
+                            "Other folders can be added with the PWCT_COMPONENTS environment "
+                            "variable." % user_dir(), parent=self)
 
     # ============================================================ mutations
     def change(self, action, *args):
@@ -516,7 +702,9 @@ class App(tk.Tk):
 
     def add_component(self, key):
         """Show the interaction page of a component and add its steps."""
-        comp = self.library[key]
+        self.add_component_object(self.library[key])
+
+    def add_component_object(self, comp):
         values = InteractionPage(self, comp, preview=self.preview, fonts=self.fonts).run()
         if values is None:
             return
@@ -776,9 +964,10 @@ class App(tk.Tk):
             self.status.configure(text="Exported to " + path)
 
     def quit_app(self):
-        if self.confirm_discard():
+        if self.confirm_discard() and self.studio.confirm_discard():
             self.runner.cleanup()
             self.after_cancel(self._poll_job)
+            self.interaction_designer.destroy()
             self.destroy()
 
     # ================================================================== run
@@ -857,6 +1046,55 @@ Right click a step for more actions. Steps can be dragged with the mouse.
 """
 
 
-def main(path=None):
+class Splash(tk.Toplevel):
+    """The welcome window of PWCT (``welcome.scx``)."""
+
+    LINES = [("Welcome", 60, 30), ("To the Real World", 100, 60), ("You are in", 130, 90),
+             ("The world of", 110, 120), ("Programming Without", 130, 150), ("Coding", 150, 180)]
+
+    def __init__(self, master):
+        super().__init__(master, background=theme.BLACK)
+        self.overrideredirect(True)
+        fonts = theme.Fonts(self)
+        width, height = 420, 330
+        canvas = tk.Canvas(self, width=width, height=height, background=theme.BLACK, highlightthickness=0)
+        canvas.pack()
+        for x in range(0, width, 6):          # the sun of the PWCT icon
+            canvas.create_line(width - 70, 70, x, height, fill="#1a1a1a")
+        canvas.create_oval(width - 110, 30, width - 30, 110, fill="#f0c000", outline="#fff27a", width=3)
+        for text, x, y in self.LINES:
+            canvas.create_text(x, y + 20, text=text, anchor="w", fill=theme.WHITE,
+                               font=(fonts.normal[0], 12, "bold"))
+        canvas.create_text(width - 20, height - 60, text="PWCT - Python", anchor="e",
+                           fill=theme.WHITE, font=(fonts.title[0], 20))
+        canvas.create_text(width - 20, height - 30, text="Version %s" % __version__, anchor="e",
+                           fill=theme.CYAN, font=(fonts.normal[0], 10))
+        self.bar = canvas.create_rectangle(0, height - 6, 0, height, fill=theme.GREEN, outline="")
+        self.canvas, self.width, self.height = canvas, width, height
+        self.update_idletasks()
+        x = (self.winfo_screenwidth() - width) // 2
+        y = (self.winfo_screenheight() - height) // 3
+        self.geometry("+%d+%d" % (x, y))
+        self.bind("<Button-1>", lambda e: self.destroy())
+        self.step = 0
+        self.after(30, self.grow)
+
+    def grow(self):
+        if not self.winfo_exists():
+            return
+        self.step += 1
+        self.canvas.coords(self.bar, 0, self.height - 6, self.width * self.step / 50, self.height)
+        if self.step < 50:
+            self.after(30, self.grow)
+        else:
+            self.destroy()
+
+
+def main(path=None, splash=True):
     app = App(path)
+    if splash:
+        app.withdraw()
+        welcome = Splash(app)
+        app.wait_window(welcome)
+        app.deiconify()
     app.mainloop()

@@ -13,16 +13,16 @@ INSERT_MODES = [("Auto", "auto"), ("Inside", "inside"), ("After", "after"), ("Be
 class ComponentBrowser(tk.Toplevel):
     """Modal window; ``result`` is the chosen component key or ``None``."""
 
-    def __init__(self, master, library, insert_mode, fonts, icons):
+    def __init__(self, master, library, insert_mode, fonts, icons, title="Select Component"):
         super().__init__(master, background=theme.WHITE)
         self.library = library
         self.result = None
-        self.title("Select Component")
+        self.title(title)
         self.transient(master)
         self.geometry("760x470")
         self.minsize(600, 380)
 
-        tk.Label(self, text="Select Component", font=fonts.big, background=theme.WHITE,
+        tk.Label(self, text=title, font=fonts.big, background=theme.WHITE,
                  foreground=theme.BLACK).pack(fill="x", pady=(6, 4))
         tk.Frame(self, height=2, background=theme.GRAY).pack(fill="x")
 
@@ -93,14 +93,21 @@ class ComponentBrowser(tk.Toplevel):
         return self.library.search(text) if text else list(self.library)
 
     def fill_domains(self):
+        """The domains tree; a domain like "GUI/Controls" is a sub domain."""
         comps = self.matching()
-        cats = sorted({c.category for c in comps})
         current = self.domains.selection()
         self.domains.delete(*self.domains.get_children())
         self.domains.insert("", "end", iid="*", text="  All Components (%d)" % len(comps), open=True)
-        for cat in cats:
-            count = sum(1 for c in comps if c.category == cat)
-            self.domains.insert("*", "end", iid=cat, text="  %s (%d)" % (cat, count))
+        counts = {}
+        for comp in comps:
+            parts = comp.category.split("/")
+            for n in range(1, len(parts) + 1):
+                path = "/".join(parts[:n])
+                counts[path] = counts.get(path, 0) + 1
+        for path in sorted(counts, key=lambda p: [x.lower() for x in p.split("/")]):
+            parent = path.rsplit("/", 1)[0] if "/" in path else "*"
+            self.domains.insert(parent, "end", iid=path, open=bool(self.search_var.get().strip()),
+                                text="  %s (%d)" % (path.rsplit("/", 1)[-1], counts[path]))
         target = current[0] if current and self.domains.exists(current[0]) else "*"
         if self.search_var.get().strip():
             target = "*"
@@ -112,7 +119,7 @@ class ComponentBrowser(tk.Toplevel):
         domain = sel[0] if sel else "*"
         self.components.delete(*self.components.get_children())
         for comp in sorted(self.matching(), key=lambda c: (c.category, c.name)):
-            if domain == "*" or comp.category == domain:
+            if domain == "*" or comp.category == domain or comp.category.startswith(domain + "/"):
                 self.components.insert("", "end", iid=comp.key, text="  " + comp.name)
         kids = self.components.get_children()
         if kids:
@@ -120,6 +127,7 @@ class ComponentBrowser(tk.Toplevel):
 
     def select(self, key):
         comp = self.library[key]
+        self.domains.see(comp.category)
         self.domains.selection_set(comp.category)
         self.fill_components()
         self.components.selection_set(key)

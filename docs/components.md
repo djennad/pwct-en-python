@@ -1,5 +1,11 @@
 # Writing components
 
+The easiest way is the **Component Designer** of the environment (the
+*Transporter* and *Interaction* buttons of the Designers bar): design the
+page, write the code mask, test it and press **Install**. It writes the
+`.pwc` file described here into `~/.pwct-python/components` (or
+`$PWCT_HOME/components`).
+
 A component is one `.pwc` text file with three sections. The file
 `pwct/components/control/while.pwc`:
 
@@ -30,19 +36,24 @@ are used by saved projects.
 | `category` | group in the components browser |
 | `description` | help text |
 | `position` | `auto` (default), `inside`, `after` or `before`: where the steps go relative to the active step. `Else` uses `after`. |
+| `layout` | `rows` (default): one field per row. `flow`: fields share a row until `enter`, like the pages of the PWCT "Interaction Pages Generator". |
 
 ## `[interaction]` – the interaction page
 
 One line per field: `kind name | label | default | options`
 
-| kind | widget | value |
-|---|---|---|
-| `text` | one line entry | the text |
-| `memo` | multi line text (default may use `\n`) | the text |
-| `check` | check box (default `1` or `0`) | `1` / `0` |
-| `list` | drop down list, options separated by commas | the chosen option |
-| `title` | section title (no name) | – |
-| `help` | help text (no name) | – |
+| kind | PWCT command | widget | value |
+|---|---|---|---|
+| `text` | LARGEGET | text box | the text |
+| `small` | SMALLGET | small text box | the text |
+| `memo` | – | multi line text (default may use `\n`) | the text |
+| `check` | CHECKBOXALONE | check box (default `1` or `0`) | `1` / `0` |
+| `list` | LISTBOX | list box, items separated by commas | the chosen item |
+| `listindex` | LISTBOX | list box | the number of the item (`1`, `2` ...) |
+| `title` | TITLE | a title bar (no name) | – |
+| `help` | – | help text (no name) | – |
+| `enter` | ENTER | starts a new row in the `flow` layout | – |
+| `page` | – | starts a new interaction page (the dialog shows page buttons) | – |
 
 Add `!` after the kind (`text!`) for a required field.
 
@@ -124,4 +135,39 @@ self.<a|name> = <a|name>
 <PWCT:ENDFOREACH>
 ```
 
-`<PWCT:NOTE> text` is a comment inside the template.
+### Variables made in the template (RPWI)
+
+```
+<PWCT:NEWVAR> T_NAMECODE          (a new, empty variable - now the active one)
+<PWCT:VALUE> 1
+<PWCT:POSITIVE>
+<PWCT:TEST> <D_CB_NAME>
+<PWCT:SETVARVALUE> NAME <D_TB_NAME>
+<PWCT:ENDTEST>
+<PWCT:NEWSTEP> Item <T_NAMECODE>
+```
+
+`<PWCT:SELECTVAR> name` makes another variable the active one;
+`<PWCT:REPLACEVARSWITHVALUES>` is accepted (the variables are replaced as
+soon as they are set).
+
+`<PWCT:NOTE> text` and lines starting with `<*>` are comments inside the
+template.
+
+## Importing PWCT 1.x components
+
+The Transporter Designer (**Import PWCT 1.x (TRF)**) and the command
+
+```
+python -m pwct import-trf path/to/TRF/TRF10.TRF -o image.pwc
+```
+
+read a component of the original PWCT: the `TRF` transporter (code mask
+and variables matching), its `IDF` interaction page (looked for in the
+`IDF` folder next to the `TRF` folder) and the domain from the `PAF`
+components tree. The code mask keeps the Harbour code of the original;
+change it to Python in the Code Mask page. **Import ISF** (Interaction
+Pages page) reads an interaction script (`TITLE`, `SMALLGET`, `LARGEGET`,
+`LISTBOX`, `CHECKBOX`, `CHECKBOXALONE`, `SMALLCHECKBOX`, `CHECKBOXLISTBOX`,
+`ENTER`) and names the variables like the Interaction Pages Generator
+(`D_TB_`, `D_CB_`, `D_LB_`).
